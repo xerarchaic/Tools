@@ -1,3 +1,5 @@
+## Basic PowerShell HTTP listener
+
 # Port to listen on (e.g., 8080 or 80)
 $port = 80
 
