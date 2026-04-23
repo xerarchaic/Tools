@@ -77,7 +77,7 @@ static void Main()
         var rs = RunspaceFactory.CreateRunspace();
         rs.Open();
     
-        var txtInput  = new System.Windows.Forms.TextBox   { Dock = DockStyle.Bottom, Height = 30 };
+        var txtInput = new System.Windows.Forms.TextBox { Dock = DockStyle.Bottom, Height = 30, TabStop = true, TabIndex = 0 };
         var txtOutput = new System.Windows.Forms.RichTextBox { Dock = DockStyle.Fill, ReadOnly = true,
                           BackColor = Color.Black, ForeColor = Color.LightGreen };
         
@@ -105,6 +105,10 @@ static void Main()
     
         form.Controls.Add(txtOutput);
         form.Controls.Add(panel);
+        form.Shown += (s, e) => {
+            form.Activate();
+            txtInput.Select();
+        };
         Application.Run(form);
     });
     t.SetApartmentState(ApartmentState.STA);
