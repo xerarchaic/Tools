@@ -72,34 +72,42 @@ using System.Management.Automation.Runspaces;
 [STAThread]
 static void Main()
 {
-    Application.EnableVisualStyles();
+    var t = new Thread(() => {
+        Application.EnableVisualStyles();
+        var rs = RunspaceFactory.CreateRunspace();
+        rs.Open();
     
-    var rs = RunspaceFactory.CreateRunspace();
-    rs.Open();
-
-    var txtInput  = new TextBox   { Dock = DockStyle.Bottom, Height = 30 };
-    var txtOutput = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true,
-                      BackColor = Color.Black, ForeColor = Color.LightGreen };
+        var txtInput  = new System.Windows.Forms.TextBox   { Dock = DockStyle.Bottom, Height = 30 };
+        var txtOutput = new System.Windows.Forms.RichTextBox { Dock = DockStyle.Fill, ReadOnly = true,
+                          BackColor = Color.Black, ForeColor = Color.LightGreen };
+        
+        Action runCmd = () => {
+            var ps = PowerShell.Create();
+            ps.Runspace = rs;
+            ps.AddScript(txtInput.Text);
+            txtOutput.AppendText("PS> " + txtInput.Text + "\n");
+            foreach (var r in ps.Invoke())
+                txtOutput.AppendText(r?.ToString() + "\n");
+            foreach (var e in ps.Streams.Error)
+                txtOutput.AppendText("ERR: " + e + "\n");
+            txtInput.Clear();
+        };
     
-    Action runCmd = () => {
-        var ps = PowerShell.Create();
-        ps.Runspace = rs;
-        ps.AddScript(txtInput.Text);
-        txtOutput.AppendText("PS> " + txtInput.Text + "\n");
-        foreach (var r in ps.Invoke())
-            txtOutput.AppendText(r?.ToString() + "\n");
-        foreach (var e in ps.Streams.Error)
-            txtOutput.AppendText("ERR: " + e + "\n");
-        txtInput.Clear();
-    };
-
-    var btn = new Button { Text = "Run", Dock = DockStyle.Bottom, Height = 30 };
-    btn.Click += (s, e) => runCmd();
-    txtInput.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; runCmd(); } };
-
-    var form = new Form { Text = "Settings", Width = 800, Height = 600 };
-    form.Controls.AddRange(new Control[] { txtOutput, txtInput, btn });
+        var btn = new System.Windows.Forms.Button { Text = "Run", Dock = DockStyle.Bottom, Height = 30 };
+        btn.Click += (s, e) => runCmd();
+        txtInput.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; runCmd(); } };
     
-    Application.Run(form);
-    rs.Close();
+        var form = new Form { Text = "Settings", Width = 800, Height = 600 };
+    
+        var panel = new Panel { Dock = DockStyle.Bottom, Height = 70 };
+        panel.Controls.Add(btn);
+        panel.Controls.Add(txtInput);
+    
+        form.Controls.Add(txtOutput);
+        form.Controls.Add(panel);
+        Application.Run(form);
+    });
+    t.SetApartmentState(ApartmentState.STA);
+    t.IsBackground = true;
+    t.Start();
 }
