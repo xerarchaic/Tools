@@ -96,6 +96,7 @@ static void Main()
         var btn = new System.Windows.Forms.Button { Text = "Run", Dock = DockStyle.Bottom, Height = 30 };
         btn.Click += (s, e) => runCmd();
         txtInput.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; runCmd(); } };
+        txtInput.KeyPress += (s, e) => { txtInput.Text += e.KeyChar; txtInput.SelectionStart = txtInput.Text.Length; };
     
         var form = new Form { Text = "Settings", Width = 800, Height = 600 };
     
@@ -114,4 +115,5 @@ static void Main()
     t.SetApartmentState(ApartmentState.STA);
     t.IsBackground = true;
     t.Start();
+    Thread.Sleep(500);
 }
