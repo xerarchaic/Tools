@@ -92,15 +92,27 @@ static void Main()
                 txtOutput.AppendText("ERR: " + e + "\n");
             txtInput.Clear();
         };
-    
         var btn = new System.Windows.Forms.Button { Text = "Run", Dock = DockStyle.Bottom, Height = 30 };
         btn.Click += (s, e) => runCmd();
-        txtInput.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; runCmd(); } };
-        txtInput.KeyPress += (s, e) => { txtInput.Text += e.KeyChar; txtInput.SelectionStart = txtInput.Text.Length; };
-    
-        var form = new Form { Text = "Settings", Width = 800, Height = 600 };
-    
-        var panel = new Panel { Dock = DockStyle.Bottom, Height = 70 };
+        
+        var form = new Form { Text = "Settings", Width = 800, Height = 600, KeyPreview = true };
+        string inputBuffer = "";
+        form.KeyPress += (s, e) => {
+            if (e.KeyChar == (char)Keys.Enter) {
+                txtInput.Text = inputBuffer;
+                inputBuffer = "";
+                txtOutput.AppendText("PS> " + txtInput.Text + "\n");
+                runCmd();
+            } else if (e.KeyChar == (char)8) { // backspace
+                if (inputBuffer.Length > 0)
+                    inputBuffer = inputBuffer.Substring(0, inputBuffer.Length - 1);
+            } else {
+                inputBuffer += e.KeyChar;
+            }
+            txtInput.Text = inputBuffer;
+            txtInput.SelectionStart = txtInput.Text.Length;
+        };
+        var panel = new System.Windows.Forms.Panel { Dock = DockStyle.Bottom, Height = 70 };
         panel.Controls.Add(btn);
         panel.Controls.Add(txtInput);
     
