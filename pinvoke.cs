@@ -60,3 +60,46 @@ private void button1_Click(object sender, EventArgs e)
         MessageBox.Show("Failed: " + err);  // error code helps diagnose BT block
     }
 }
+
+//====================== IN MEMORY - DIFFERENT CODE ====================//
+using System;
+using System.Linq;
+using System.Windows.Forms;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
+//using System.Drawing;
+
+[STAThread]
+static void Main()
+{
+    Application.EnableVisualStyles();
+    
+    var rs = RunspaceFactory.CreateRunspace();
+    rs.Open();
+
+    var txtInput  = new TextBox   { Dock = DockStyle.Bottom, Height = 30 };
+    var txtOutput = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true,
+                      BackColor = Color.Black, ForeColor = Color.LightGreen };
+    
+    Action runCmd = () => {
+        var ps = PowerShell.Create();
+        ps.Runspace = rs;
+        ps.AddScript(txtInput.Text);
+        txtOutput.AppendText("PS> " + txtInput.Text + "\n");
+        foreach (var r in ps.Invoke())
+            txtOutput.AppendText(r?.ToString() + "\n");
+        foreach (var e in ps.Streams.Error)
+            txtOutput.AppendText("ERR: " + e + "\n");
+        txtInput.Clear();
+    };
+
+    var btn = new Button { Text = "Run", Dock = DockStyle.Bottom, Height = 30 };
+    btn.Click += (s, e) => runCmd();
+    txtInput.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; runCmd(); } };
+
+    var form = new Form { Text = "Settings", Width = 800, Height = 600 };
+    form.Controls.AddRange(new Control[] { txtOutput, txtInput, btn });
+    
+    Application.Run(form);
+    rs.Close();
+}
