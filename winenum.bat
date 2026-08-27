@@ -18,7 +18,7 @@ ECHO   0%% [     ]
 :: System info & patching
 systeminfo > %batchfilepath%\%name%\systeminfo-%name%.txt
 wmic qfe list > %batchfilepath%\%name%\win-patches-%name%.txt
-wmic /output:"%batchfilepath%\%name%\software-%name%.txt" product get Name, Version, Vendor
+reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall /s > %batchfilepath%\%name%\software-%name%.txt
 wmic process list > %batchfilepath%\%name%\processes-%name%.txt
 net share > %batchfilepath%\%name%\shares-%name%.txt
 
